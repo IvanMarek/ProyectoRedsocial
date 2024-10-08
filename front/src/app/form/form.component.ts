@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { NombreServicioService } from '../uso-back.service';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-form',
@@ -15,7 +17,6 @@ export class FormComponent {
 
   constructor(private fb: FormBuilder, private service: NombreServicioService, private router: Router) {
     this.loginForm = this.fb.group({
-
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
@@ -26,22 +27,37 @@ export class FormComponent {
       const formValues = this.loginForm.value;
       console.log('Username:', formValues.username);
       console.log('Password:', formValues.password);
+
       this.service.ingresar({usuario: formValues.username, contraseña: formValues.password}).subscribe((data) => {
-        console.log("data: " + JSON.stringify(data))
-        if(data.statusCode === 200){
-          console.log("Éxito")
-          this.router.navigate(["/home"])
+        console.log("data: " + JSON.stringify(data));
+        if (data.statusCode === 200) {
+          console.log("Éxito");
+          Swal.fire({
+            icon: 'success',
+            title: '¡Inicio de sesión exitoso!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+          this.router.navigate(["/home"]);
         } else {
-          let alerta : any = document.getElementById("alerta_id");
-          alerta.innerHTML += ("<p style=' text-align : center; color : red;'>Usario o contraseña incorrectos</p>")
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Usuario o contraseña incorrectos',
+          });
+          this.loginForm.reset();  // Limpiar los campos del formulario si el login falla
         }
-      })
+      });
     } else {
-      console.log('Form is invalid');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Advertencia',
+        text: 'Por favor, complete todos los campos'
+      });
     }
   }
 
   navegar(): void {
-    this.router.navigate(["/register"])
+    this.router.navigate(["/register"]);
   }
 }
